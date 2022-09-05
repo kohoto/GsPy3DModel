@@ -5,56 +5,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random as rand
 import GsPy3DModel.geostatspy as gsp
-import GsPy3DModel.model_3D as p3d
-
-
-# specify the directory to create new dir for stl files
-save_parent_dir = 'output/'
-image_type = 'tif'
-file_type = 'stl'
-dpi = 600
+import GsPy3DModel.model_3D as m3d
 
 
 def main():
-    # read input file here!!
+    import shutil
 
-    # input for ridge
-    ridge = 0
-    ridge_height = 0.1  # inch
-    ridge_margin = 0.0  # inch
-    n_cut = [1, 1]  # Divide into how many files in each direction? (y, x)!!!
-    # Modeling parameters, the model grid, the random seed, the target distribution, and color bar
-    # Lx = 48;
-    # Ly = 23.5;
-    Lx = 7;
-    Ly = 1.7;
-    cell_size = 0.01
-    # cell_size = 0.02   # Using for coarse main
-    # cell_size = 0.01   # Using this for side frac, too precise for main
-    # corr_length_x = 0.04; corr_length_z = 0.5;
-    # corr_length_x = 0.5;    corr_length_z = 0.5;
-    height = 0.5  # [inch]
+    input_file_path = '../GsPy3DModel/input/inp'
+    save_parent_dir = 'output/'
+
+    [image_type, file_type, dpi, Lx, Ly, cell_size, height, mean, stdev, hmaj1, hmin1, n_cut, ridge, ridge_height, ridge_margin] = m3d.read_input(input_file_path)
+
+    """ calc some parameters from inputs """
+    # number of grids
     nx = int(Lx / cell_size) + 1
     ny = int(Ly / cell_size) + 1
-    # hmaj1 = 11.75
-    # hmin1 = 1.175
-    hmaj1 = 1.0
-    hmin1 = 1.0
-
-
-    # TODO: throw error if Lx, Ly, height are not the multiple of cell_size.
-
-    # grid number of cells and cell size
+    # cell size
     xmin = 0.0
     ymin = 0.0  # grid origin
     xmax = Lx + cell_size
     ymax = Ly + cell_size  # calculate the extent of model
     seed = rand.randint(7000, 8000)  # random number seed  for stochastic simulation
     cmap = plt.cm.plasma  # color min and max and using the plasma color map
-    # Width statistical parameters
     # cmin and cmax: min and max of colorbar
-    mean = 1.0
-    stdev = 0.025
+    #TODO: check how cmap is used. make the color closer to profilometer data.
 
 
     # name of the dir
@@ -65,6 +39,9 @@ def main():
     is_exist = os.path.exists(path)
     if not is_exist:
         os.makedirs(path)
+
+    # copy input file to the output dir
+    shutil.copyfile(input_file_path, path + '/inp')
 
     # Make a truth model / unconditional simulation
     # mean = 0.18; stdev = 0.05; cmin = 0.0; cmax = 0.3
@@ -123,17 +100,17 @@ def main():
     # iterate for each small pieces
     for width, width_mirror, file_number in zip(widths, widths_mirror, range(n_cut[0]*n_cut[1])):
         filename = save_parent_dir + dir_name + '/surf_' + str(file_number)
-        p3d.open_STL(filename)
-        p3d.open_STL(filename + '_mirror')
+        m3d.open_STL(filename)
+        m3d.open_STL(filename + '_mirror')
 
         if ridge:
             # Create ridge in the middle
             # ridge location is going to be 3" heigher than the middle
             ridge_loc_y = 0.5 * ymax + 1.0 # has to be 1 -> 3 in in the real sample
             # top of ridge
-            p3d.generateSTL_ridge(width, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, ridge_height, ridge_margin, height, filename)
+            m3d.generateSTL_ridge(width, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, ridge_height, ridge_margin, height, filename)
             # top of ridge mirrored
-            p3d.generateSTL_ridge(width_mirror, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, -ridge_height, ridge_margin, height, filename + '_mirror')
+            m3d.generateSTL_ridge(width_mirror, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, -ridge_height, ridge_margin, height, filename + '_mirror')
 
         else:
 
@@ -143,22 +120,22 @@ def main():
             ymax = width.shape[0] * cell_size
             if file_type == 'stl':
                 # Generate STL file for 3D modeling
-                p3d.generateSTL(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
+                m3d.generateSTL(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
                 # Generate STL file for matching surface
-                p3d.generateSTL(width_mirror, xmin, xmax, ymin, ymax, cell_size, height, filename + '_mirror')
+                m3d.generateSTL(width_mirror, xmin, xmax, ymin, ymax, cell_size, height, filename + '_mirror')
             elif file_type == 'ply':
                 # Generate XYZ data file (.ply file)
-                p3d.generatePLY(width, xmin, xmax, ymin, ymax, cell_size, height, 'surface')
+                m3d.generatePLY(width, xmin, xmax, ymin, ymax, cell_size, height, 'surface')
                 # Generate PLY for matching surface
-                p3d.generatePLY(width_mirror, xmin, xmax, ymin, ymax, cell_size, height, 'surface_mirror')
+                m3d.generatePLY(width_mirror, xmin, xmax, ymin, ymax, cell_size, height, 'surface_mirror')
             else:
                 print("Error: file_type is not defined. [main]")
 
-        p3d.close_STL(filename)
-        p3d.close_STL(filename + '_mirror')
+        m3d.close_STL(filename)
+        m3d.close_STL(filename + '_mirror')
 
         # generate profilometer file
-        p3d.create_profilometer_file(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
+        m3d.create_profilometer_file(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
 
 
 if __name__ == "__main__":

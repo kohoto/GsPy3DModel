@@ -1,5 +1,50 @@
 import numpy as np
 import math
+import random as rand
+import matplotlib.pyplot as plt
+
+def read_input(fpath):
+    header = True
+    inp = []
+    for line in open(fpath):
+        if header:
+            header = False
+        else:
+            splited_line = line.split()
+            inp.append(splited_line)
+            header = True
+
+    # specify the directory to create new dir for stl files
+    image_type = inp[0][0]
+    file_type = inp[0][1]
+    # change data type. Rest is all numbers
+    dpi = float(inp[0][2])
+
+    # 2nd row
+    Lx = float(inp[1][0])
+    Ly = float(inp[1][1])
+    cell_size = float(inp[1][2])
+    height = float(inp[1][3])  # [inch]
+    mean = float(inp[1][4])
+    stdev = float(inp[1][5])
+
+
+    # 3rd row
+    hmaj1 = float(inp[2][0])
+    hmin1 = float(inp[2][1])
+
+    # 4th row
+    n_cut = [int(inp[3][1]), int(inp[3][0])]  # Divide into how many files in each direction? (y, x)!!!
+
+    # 5th row - input for ridge
+    ridge = int(inp[4][0])
+    ridge_height = float(inp[4][1]) # inch
+    ridge_margin = float(inp[4][2])  # inch
+
+    # TODO: throw error if Lx, Ly, height are not the multiple of cell_size.
+
+    return image_type, file_type, dpi, Lx, Ly, cell_size, height, mean, stdev, hmaj1, hmin1, n_cut, ridge, ridge_height, ridge_margin
+
 
 def generateSTL(array, xmin, xmax, ymin, ymax, step, height, filename):
     filename = filename + '.stl'
