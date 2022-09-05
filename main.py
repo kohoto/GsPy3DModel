@@ -4,8 +4,8 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import random as rand
-import GsPy3DPrint.geostatspy as gsp
-import GsPy3DPrint.model_3D as p3d
+import GsPy3DModel.geostatspy as gsp
+import GsPy3DModel.model_3D as p3d
 
 
 # specify the directory to create new dir for stl files
@@ -30,10 +30,10 @@ def main():
     Ly = 1.7;
     cell_size = 0.01
     # cell_size = 0.02   # Using for coarse main
-    # cell_size = 0.01 # Using this for side frac, too precise for main
+    # cell_size = 0.01   # Using this for side frac, too precise for main
     # corr_length_x = 0.04; corr_length_z = 0.5;
     # corr_length_x = 0.5;    corr_length_z = 0.5;
-    height = 2.0  # [inch]
+    height = 0.5  # [inch]
     nx = int(Lx / cell_size) + 1
     ny = int(Ly / cell_size) + 1
     # hmaj1 = 11.75
@@ -69,7 +69,7 @@ def main():
     # Make a truth model / unconditional simulation
     # mean = 0.18; stdev = 0.05; cmin = 0.0; cmax = 0.3
     var = gsp.make_variogram(nug=0.0, nst=1, it1=1, cc1=1.0, azi1=90.0, hmaj1=hmaj1, hmin1=hmin1)
-    width = gsp.GSLIB_sgsim_2d_uncond(1, nx, ny, cell_size, seed + 3, var, "input/Porosity")
+    width = gsp.GSLIB_sgsim_2d_uncond(1, nx, ny, cell_size, seed + 3, var, "input/width_distribution")
     width = gsp.affine(width, mean, stdev)
 
 # copy from here
@@ -179,41 +179,3 @@ if __name__ == "__main__":
 # affine
 # pixelplt_st
 
-## Functions listed in Testing
-# - Some of them have differnet names, but all of them are in library and can be called.
-# gsp.ndarray2GSLIB()
-# gsp.GSLIB2ndarray()
-# gsp.Dataframe2GSLIB()
-# gsp.GSLIB2Dataframe()
-# gsp.hist()
-# gsp.hist_st()
-# gsp.GSLIB.locmap()
-# gsp.GSLIB.locmap_st()
-# gsp.GSLIB.pixelplt
-# gsp.pixelplt_st
-# gsp.pixelplt_log_st
-# gsp.locpix
-# gsp.locpix_st
-# gsp.locpix_log_st
-# gsp.affine()
-# gsp.nscore()
-# gsp.make_variogram()
-# gsp.gamv_2d -> This may be called just gamv now
-# gsp.varmapv_2d  -> This may be called just varmapv now
-# gsp.varmap_2d -> This may be called just varmap now
-# gsp.vmodel_2d -> vmodel
-# gsp.declus()
-# gsp.GSLIB_sgsim_2d_uncond
-# gsp.GSLIB_kb2d_2d
-# gsp.GSLIB_sgsim_2d
-# gsp.GSLIB_cosgsim_2d_uncond
-# gsp.sample()
-# gsp.gkern()
-# gsp.regular_sample()
-# gsp.random_sample()
-# gsp.DataFrame2ndarray()
-
-## My functions
-# generateSTL
-# generatePLY
-# create_ridge

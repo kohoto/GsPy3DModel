@@ -564,7 +564,7 @@ def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
 
     sim_array = np.random.rand(nx, ny)
 
-    file = open("../GsPy3DPrint/sgsim.par", "w")
+    file = open("../GsPy3DModel/sgsim.par", "w")
     file.write("              Parameters for SGSIM                                         \n")
     file.write("              ********************                                         \n")
     file.write("                                                                           \n")
@@ -704,7 +704,7 @@ def GSLIB_sgsim_2d(nreal, df, xcol, ycol, vcol, nx, ny, hsiz, seed, var, output_
 
     sim_array = np.random.rand(nx, ny)
 
-    file = open("../GsPy3DPrint/sgsim.par", "w")
+    file = open("../GsPy3DModel/sgsim.par", "w")
     file.write("              Parameters for SGSIM                                         \n")
     file.write("              ********************                                         \n")
     file.write("                                                                           \n")
@@ -775,7 +775,7 @@ def GSLIB_cosgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, sec, correl, output_
 
     ndarray2GSLIB(sec, "sec.dat", 'sec_dat')
 
-    file = open("../GsPy3DPrint/sgsim.par", "w")
+    file = open("../GsPy3DModel/sgsim.par", "w")
     file.write("              Parameters for SGSIM                                         \n")
     file.write("              ********************                                         \n")
     file.write("                                                                           \n")
