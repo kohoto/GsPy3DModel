@@ -66,6 +66,8 @@ def main():
     # Get the difference of the minimum value of two surfaces
     dmin = width_mirror.min() - width.min()
     width_mirror -= dmin
+    # transpose to match the surface
+    width_mirror = np.flipud(width_mirror)
     #width_mirror *= -1 # This is to make mirrored rough surface matches to the original surface
 
     # Show histogram of width
