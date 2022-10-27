@@ -139,6 +139,12 @@ def main():
         # generate profilometer file
         m3d.create_profilometer_file(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
 
+        apature = 0.078  # [inch]
+        filename = save_parent_dir + dir_name + '/apature'
+        m3d.open_STL(filename)
+        m3d.create_frac_apature(width, xmin, xmax, ymin, ymax, cell_size, apature, filename)
+        m3d.close_STL(filename)
+
 
 if __name__ == "__main__":
     main()
