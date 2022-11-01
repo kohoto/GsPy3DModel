@@ -351,7 +351,7 @@ def create_left_new(array_top, array_btm, xmin, xmax, ymin, ymax, step, height, 
     # left side - lower triangle
     cd1 = [x[1:, [0]].reshape((ny - 1), 1),  y[1:, [0]].reshape((ny - 1), 1), array_btm[1:, [0]].reshape((ny - 1), 1)]
     cd2 = [x[:-1, [0]].reshape((ny - 1), 1), y[:-1, [0]].reshape((ny - 1), 1), array_btm[:-1, [0]].reshape((ny - 1), 1)]
-    cd3 = [x[1:, [0]].reshape((ny - 1), 1), y[1:, [0]].reshape((ny - 1), 1), array_top[:-1, [0]].reshape((ny - 1), 1)]
+    cd3 = [x[1:, [0]].reshape((ny - 1), 1), y[1:, [0]].reshape((ny - 1), 1), array_top[1:, [0]].reshape((ny - 1), 1)]
     coord1 = np.concatenate((coord1, cd1), axis=1)
     coord2 = np.concatenate((coord2, cd2), axis=1)
     coord3 = np.concatenate((coord3, cd3), axis=1)
