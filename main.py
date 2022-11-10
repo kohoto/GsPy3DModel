@@ -67,7 +67,7 @@ def main():
     dmin = width_mirror.min() - width.min()
     width_mirror -= dmin
     # transpose to match the surface
-    width_mirror = np.flipud(width_mirror)
+    # width_mirror = np.flipud(width_mirror)
     #width_mirror *= -1 # This is to make mirrored rough surface matches to the original surface
 
     # Show histogram of width
@@ -120,6 +120,7 @@ def main():
             xmax = width.shape[1] * cell_size
             ymin = 0
             ymax = width.shape[0] * cell_size
+            width_mirror = np.flipud(width_mirror)  # deal with mirroring problem just before writing the output file!!!! Otherwise bad things will happen.
             if file_type == 'stl':
                 # Generate STL file for 3D modeling
                 m3d.generateSTL(width, xmin, xmax, ymin, ymax, cell_size, height, filename)

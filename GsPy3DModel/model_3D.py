@@ -173,7 +173,6 @@ def generateSTL_ridge(array, xmin, xmax, ymin, ymax, step, ridge_loc_y, ridge_he
             file.write(f'endloop\n endfacet\n')
 
 def create_frac_apature(array, xmin, xmax, ymin, ymax, step, apature, filename):
-    filename = filename + '.stl'
     # array += height  # inch
 
     x = [i for i in np.arange(xmin, xmax, step)]
@@ -193,24 +192,15 @@ def create_frac_apature(array, xmin, xmax, ymin, ymax, step, apature, filename):
     coord1[:] = np.nan
     coord2 = coord1
     coord3 = coord1
+    # walls
     # top
     coord1, coord2, coord3 = create_top(array + apature, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
     # bottom
     coord1, coord2, coord3 = create_top(array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
-    # front
-    coord1, coord2, coord3 = create_front_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
-    # back
-    coord1, coord2, coord3 = create_back_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
-    #left
-    coord1, coord2, coord3 = create_left_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
-    # right
-    coord1, coord2, coord3 = create_right_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
-
     # transpose
     coord1 = np.transpose(coord1, (1, 0, 2))
     coord2 = np.transpose(coord2, (1, 0, 2))
     coord3 = np.transpose(coord3, (1, 0, 2))
-
     # normal vectors
     normal = (coord2[:, 1] - coord1[:, 1]) * (coord3[:, 2] - coord1[:, 2]) - (coord3[:, 1] - coord1[:, 1]) * (
             coord2[:, 2] - coord1[:, 2])
@@ -220,7 +210,42 @@ def create_frac_apature(array, xmin, xmax, ymin, ymax, step, apature, filename):
                              - (coord3[:, 0] - coord1[:, 0]) * (coord2[:, 1] - coord1[:, 1])), axis=1)
 
     #  Start printing out triangles
-    with open(filename, 'a') as file:
+    with open(filename + '_walls.stl', 'w') as file:
+        file.write(f'solid walls\n')
+        for cd1, cd2, cd3, nml in zip(coord1, coord2, coord3, normal):
+            x, y, z = nml[0], nml[1], nml[2]
+            file.write(f'facet normal {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'outer loop\n')
+            x, y, z = cd1[0][0], cd1[1][0], cd1[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd2[0][0], cd2[1][0], cd2[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd3[0][0], cd3[1][0], cd3[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'endloop\nendfacet\n')
+        file.write(f'endsolid walls\n')
+
+    # front - inlet
+    coord1 = np.empty((3,1,1))
+    coord1[:] = np.nan
+    coord2 = coord1
+    coord3 = coord1
+    coord1, coord2, coord3 = create_front_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
+    # transpose
+    coord1 = np.transpose(coord1, (1, 0, 2))
+    coord2 = np.transpose(coord2, (1, 0, 2))
+    coord3 = np.transpose(coord3, (1, 0, 2))
+    # normal vectors
+    normal = (coord2[:, 1] - coord1[:, 1]) * (coord3[:, 2] - coord1[:, 2]) - (coord3[:, 1] - coord1[:, 1]) * (
+            coord2[:, 2] - coord1[:, 2])
+    normal = np.concatenate((normal, (coord2[:, 2] - coord1[:, 2]) * (coord3[:, 0] - coord1[:, 0])
+                             - (coord3[:, 2] - coord1[:, 2]) * (coord2[:, 0] - coord1[:, 0])), axis=1)
+    normal = np.concatenate((normal, (coord2[:, 0] - coord1[:, 0]) * (coord3[:, 1] - coord1[:, 1])
+                             - (coord3[:, 0] - coord1[:, 0]) * (coord2[:, 1] - coord1[:, 1])), axis=1)
+
+    #  Start printing out triangles
+    with open(filename + '_periodic1.stl', 'w') as file:
+        file.write(f'solid periodic1\n')
         for cd1, cd2, cd3, nml in zip(coord1, coord2, coord3, normal):
             x, y, z = nml[0], nml[1], nml[2]
             file.write(f'facet normal {x:.5f} {y:.5f} {z:.5f}\n')
@@ -232,6 +257,112 @@ def create_frac_apature(array, xmin, xmax, ymin, ymax, step, apature, filename):
             x, y, z = cd3[0][0], cd3[1][0], cd3[2][0]
             file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
             file.write(f'endloop\n endfacet\n')
+        file.write(f'endsolid periodic1\n')
+
+    # back
+    coord1 = np.empty((3,1,1))
+    coord1[:] = np.nan
+    coord2 = coord1
+    coord3 = coord1
+    coord1, coord2, coord3 = create_back_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
+
+    # transpose
+    coord1 = np.transpose(coord1, (1, 0, 2))
+    coord2 = np.transpose(coord2, (1, 0, 2))
+    coord3 = np.transpose(coord3, (1, 0, 2))
+    # normal vectors
+    normal = (coord2[:, 1] - coord1[:, 1]) * (coord3[:, 2] - coord1[:, 2]) - (coord3[:, 1] - coord1[:, 1]) * (
+            coord2[:, 2] - coord1[:, 2])
+    normal = np.concatenate((normal, (coord2[:, 2] - coord1[:, 2]) * (coord3[:, 0] - coord1[:, 0])
+                             - (coord3[:, 2] - coord1[:, 2]) * (coord2[:, 0] - coord1[:, 0])), axis=1)
+    normal = np.concatenate((normal, (coord2[:, 0] - coord1[:, 0]) * (coord3[:, 1] - coord1[:, 1])
+                             - (coord3[:, 0] - coord1[:, 0]) * (coord2[:, 1] - coord1[:, 1])), axis=1)
+
+    #  Start printing out triangles
+    with open(filename + '_periodic2.stl', 'w') as file:
+        file.write(f'solid periodic2\n')
+        for cd1, cd2, cd3, nml in zip(coord1, coord2, coord3, normal):
+            x, y, z = nml[0], nml[1], nml[2]
+            file.write(f'facet normal {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'outer loop\n')
+            x, y, z = cd1[0][0], cd1[1][0], cd1[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd2[0][0], cd2[1][0], cd2[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd3[0][0], cd3[1][0], cd3[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'endloop\n endfacet\n')
+        file.write(f'endsolid periodic2\n')
+
+    #left - inlet
+    coord1 = np.empty((3,1,1))
+    coord1[:] = np.nan
+    coord2 = coord1
+    coord3 = coord1
+    coord1, coord2, coord3 = create_left_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
+
+    # transpose
+    coord1 = np.transpose(coord1, (1, 0, 2))
+    coord2 = np.transpose(coord2, (1, 0, 2))
+    coord3 = np.transpose(coord3, (1, 0, 2))
+    # normal vectors
+    normal = (coord2[:, 1] - coord1[:, 1]) * (coord3[:, 2] - coord1[:, 2]) - (coord3[:, 1] - coord1[:, 1]) * (
+            coord2[:, 2] - coord1[:, 2])
+    normal = np.concatenate((normal, (coord2[:, 2] - coord1[:, 2]) * (coord3[:, 0] - coord1[:, 0])
+                             - (coord3[:, 2] - coord1[:, 2]) * (coord2[:, 0] - coord1[:, 0])), axis=1)
+    normal = np.concatenate((normal, (coord2[:, 0] - coord1[:, 0]) * (coord3[:, 1] - coord1[:, 1])
+                             - (coord3[:, 0] - coord1[:, 0]) * (coord2[:, 1] - coord1[:, 1])), axis=1)
+
+    #  Start printing out triangles
+    with open(filename + '_inlet.stl', 'w') as file:
+        file.write(f'solid inlet\n')
+        for cd1, cd2, cd3, nml in zip(coord1, coord2, coord3, normal):
+            x, y, z = nml[0], nml[1], nml[2]
+            file.write(f'facet normal {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'outer loop\n')
+            x, y, z = cd1[0][0], cd1[1][0], cd1[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd2[0][0], cd2[1][0], cd2[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd3[0][0], cd3[1][0], cd3[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'endloop\n endfacet\n')
+        file.write(f'endsolid inlet\n')
+
+
+    # right - outlet
+    coord1 = np.empty((3,1,1))
+    coord1[:] = np.nan
+    coord2 = coord1
+    coord3 = coord1
+    coord1, coord2, coord3 = create_right_new(array + apature, array, xmin, xmax, ymin, ymax, step, 0.0, coord1, coord2, coord3)
+    # transpose
+    coord1 = np.transpose(coord1, (1, 0, 2))
+    coord2 = np.transpose(coord2, (1, 0, 2))
+    coord3 = np.transpose(coord3, (1, 0, 2))
+    # normal vectors
+    normal = (coord2[:, 1] - coord1[:, 1]) * (coord3[:, 2] - coord1[:, 2]) - (coord3[:, 1] - coord1[:, 1]) * (
+            coord2[:, 2] - coord1[:, 2])
+    normal = np.concatenate((normal, (coord2[:, 2] - coord1[:, 2]) * (coord3[:, 0] - coord1[:, 0])
+                             - (coord3[:, 2] - coord1[:, 2]) * (coord2[:, 0] - coord1[:, 0])), axis=1)
+    normal = np.concatenate((normal, (coord2[:, 0] - coord1[:, 0]) * (coord3[:, 1] - coord1[:, 1])
+                             - (coord3[:, 0] - coord1[:, 0]) * (coord2[:, 1] - coord1[:, 1])), axis=1)
+
+    #  Start printing out triangles
+    with open(filename + '_outlet.stl', 'w') as file:
+        file.write(f'solid outlet\n')
+        for cd1, cd2, cd3, nml in zip(coord1, coord2, coord3, normal):
+            x, y, z = nml[0], nml[1], nml[2]
+            file.write(f'facet normal {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'outer loop\n')
+            x, y, z = cd1[0][0], cd1[1][0], cd1[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd2[0][0], cd2[1][0], cd2[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            x, y, z = cd3[0][0], cd3[1][0], cd3[2][0]
+            file.write(f'vertex {x:.5f} {y:.5f} {z:.5f}\n')
+            file.write(f'endloop\n endfacet\n')
+        file.write(f'endsolid outlet\n')
 
 
 def create_top(array, xmin, xmax, ymin, ymax, step, height, coord1, coord2, coord3):
@@ -380,8 +511,7 @@ def create_right_new(array_top, array_btm, xmin, xmax, ymin, ymax, step, height,
     # right side - lower triangle
     cd1 = [x[:-1, [-1]].reshape((ny - 1), 1), y[:-1, [-1]].reshape((ny - 1), 1), array_btm[:-1, [-1]].reshape((ny - 1), 1)]
     cd2 = [x[1:, [-1]].reshape((ny - 1), 1), y[1:, [-1]].reshape((ny - 1), 1), array_btm[1:, [-1]].reshape((ny - 1), 1)]
-    cd3 = [x[:-1, [-1]].reshape((ny - 1), 1), y[:-1, [-1]].reshape((ny - 1), 1),
-           array_top[:-1, [-1]].reshape((ny - 1), 1)]
+    cd3 = [x[:-1, [-1]].reshape((ny - 1), 1), y[:-1, [-1]].reshape((ny - 1), 1), array_top[:-1, [-1]].reshape((ny - 1), 1)]
     coord1 = np.concatenate((coord1, cd1), axis=1)
     coord2 = np.concatenate((coord2, cd2), axis=1)
     coord3 = np.concatenate((coord3, cd3), axis=1)
@@ -389,6 +519,7 @@ def create_right_new(array_top, array_btm, xmin, xmax, ymin, ymax, step, height,
     cd1 = cd2
     cd2 = [x[1:, [-1]].reshape((ny - 1), 1), y[1:, [-1]].reshape((ny - 1), 1),
            array_top[1:, [-1]].reshape((ny - 1), 1)]
+
     coord1 = np.concatenate((coord1, cd1), axis=1)
     coord2 = np.concatenate((coord2, cd2), axis=1)
     coord3 = np.concatenate((coord3, cd3), axis=1)
