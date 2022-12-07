@@ -57,8 +57,8 @@ def main():
     # Show distribution
     cmin = width.min()
     cmax = width.max()
-    gsp.pixelplt_st(width, xmin, xmax, ymin, ymax, cell_size, cmin, cmax, "Artificial Surface Dist.", "X [in]",
-                "Y [in]", "Width [in]", cmap)
+    # gsp.pixelplt_st(width, xmin, xmax, ymin, ymax, cell_size, cmin, cmax, "Artificial Surface Dist.", "X [in]",
+    #            "Y [in]", "Width [in]", cmap)
 
     # Create mirrored surface
 
@@ -67,14 +67,14 @@ def main():
     dmin = width_mirror.min() - width.min()
     width_mirror -= dmin
     # transpose to match the surface
-    # width_mirror = np.flipud(width_mirror)
+    #width_mirror = np.flipud(width_mirror)
     #width_mirror *= -1 # This is to make mirrored rough surface matches to the original surface
 
     # Show histogram of width
     #plt.hist(width.reshape(-1))
     #plt.show()
-    cut_x = math.floor(width.shape[1] / n_cut[1])
-    cut_y = math.floor(width.shape[0] / n_cut[0])
+    cut_x = math.floor(width.shape[1] / n_cut[1])+1
+    cut_y = math.floor(width.shape[0] / n_cut[0])+1
 
     widths = []
     widths_mirror = []
