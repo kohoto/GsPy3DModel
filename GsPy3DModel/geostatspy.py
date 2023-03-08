@@ -564,7 +564,7 @@ def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
 
     sim_array = np.random.rand(nx, ny)
 
-    file = open("../GsPy3DModel/sgsim.par", "w")
+    file = open("sgsim.par", "w")
     file.write("              Parameters for SGSIM                                         \n")
     file.write("              ********************                                         \n")
     file.write("                                                                           \n")

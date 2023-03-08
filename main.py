@@ -108,7 +108,10 @@ def main():
         if ridge:
             # Create ridge in the middle
             # ridge location is going to be 3" heigher than the middle
-            ridge_loc_y = 0.5 * ymax + 1.0 # has to be 1 -> 3 in in the real sample
+            ridge_loc_y = 0.5 * ymax # has to be 1 -> 3 in in the real sample
+
+            # determine the exact location of ridge (ridge location cannot be in the middle of the cell)
+            ridge_loc_y = int(ridge_loc_y / cell_size) * cell_size
             # top of ridge
             m3d.generateSTL_ridge(width, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, ridge_height, ridge_margin, height, filename)
             # top of ridge mirrored
@@ -139,12 +142,6 @@ def main():
 
         # generate profilometer file
         m3d.create_profilometer_file(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
-
-        apature = 0.078  # [inch]
-        filename = save_parent_dir + dir_name + '/apature'
-        m3d.open_STL(filename)
-        m3d.create_frac_apature(width, xmin, xmax, ymin, ymax, cell_size, apature, filename)
-        m3d.close_STL(filename)
 
 
 if __name__ == "__main__":
