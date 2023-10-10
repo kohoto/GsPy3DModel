@@ -1,0 +1,10 @@
+__pycache__
+__init.py__
+*.exe
+*.stl
+*.dbg
+*.par
+output
+.idea
+Prosity
+width_distribution

@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import random as rand
 import math
 import scipy.signal as signal
-
-image_type = 'tif';
+import decimal
+image_type = 'png';
 dpi = 600
 
 
@@ -31,7 +31,7 @@ def ndarray2GSLIB(array, data_file, col_name):
         for ix in range(0, nx):
             file_out.write(str(array[ix]) + '\n')
     else:
-        Print("Error: must use a 2D array")
+        print("Error: must use a 2D array")
         file_out.close()
         return
     file_out.close()
@@ -158,14 +158,19 @@ def locmap_st(df, xcol, ycol, vcol, xmin, xmax, ymin, ymax, vmin, vmax, title, x
 def pixelplt(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, ylabel, vlabel, cmap, fig_name):
     print(str(step))
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    plt.figure(figsize=(8, 6))
-    im = plt.contourf(xx, yy, array, cmap=cmap, vmin=vmin, vmax=vmax, levels=np.linspace(vmin, vmax, 100))
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    cbar = plt.colorbar(im, orientation='vertical', ticks=np.linspace(vmin, vmax, 10))
-    cbar.set_label(vlabel, rotation=270, labelpad=20)
-    plt.savefig(fig_name + '.' + image_type, dpi=dpi)
+    fig, ax = plt.subplots(figsize=(7,3))
+    im = ax.contourf(xx, yy, array, cmap=cmap, vmin=vmin, vmax=vmax, levels=np.linspace(vmin, vmax, 100))
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    plt.gca().set_aspect("equal")
+    # setting for color bar
+    decimal.getcontext().prec = 1
+    imratio = array.shape[0] / array.shape[1]
+    cbar = plt.colorbar(im, ticks=np.linspace(float(decimal.Decimal(vmin)), float(decimal.Decimal(vmax)), 5), fraction=0.046 * imratio, pad=0.04)
+    cbar.set_label(vlabel, rotation=270)
+    fig.savefig(fig_name + '.' + image_type, dpi=dpi, transparent=True)
+    fig.tight_layout()
     plt.show()
     return im
 
@@ -326,7 +331,9 @@ def make_variogram(nug, nst, it1, cc1, azi1, hmaj1, hmin1, it2=1, cc2=0, azi2=0,
 # irregularly sampled variogram, 2D wrapper for gam from GSLIB (.exe must be in working directory)
 def gamv_2d(df, xcol, ycol, vcol, nlag, lagdist, azi, atol, bstand):
     import os
-    import numpy as np
+    initial_dir = os.getcwd()
+    os.chdir(os.path.dirname(__file__))
+
     lag = [];
     gamma = [];
     npair = []
@@ -352,9 +359,9 @@ def gamv_2d(df, xcol, ycol, vcol, nlag, lagdist, azi, atol, bstand):
     file.write("1   1   1                         -tail var., head var., variogram type    \n")
     file.close()
 
-    os.system('gamv.exe gamv.par')
+    os.system("gamv.exe gamv.par")
     reading = True
-    with open("gamv.out") as myfile:
+    with open("gamv.out", 'r') as myfile:
         head = [next(myfile) for x in range(1)]  # skip the first line
         iline = 0
         while reading:
@@ -366,6 +373,7 @@ def gamv_2d(df, xcol, ycol, vcol, nlag, lagdist, azi, atol, bstand):
                 iline = iline + 1
             except StopIteration:
                 reading = False
+    os.chdir(initial_dir)
     return (lag, gamma, npair)
 
 
@@ -545,6 +553,8 @@ def declus(df, xcol, ycol, vcol, cmin, cmax, cnum, bmin):
 def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
     import os
     import numpy as np
+    cd = os.getcwd()
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     nug = var['nug']
     nst = var['nst'];
@@ -605,9 +615,11 @@ def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
     file.write(str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n")
     file.write(" " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
     file.close()
-
+    print(os.getcwd())
     os.system('"sgsim.exe sgsim.par"')
     sim_array = GSLIB2ndarray(output_file, 0, nx, ny)
+
+    os.chdir(cd)
     return (sim_array[0])
 
 
