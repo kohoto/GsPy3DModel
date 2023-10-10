@@ -14,25 +14,38 @@ def main():
     input_file_path = '../GsPy3DModel/input/inp'
     save_parent_dir = 'output/'
 
-    [image_type, file_type, dpi, Lx, Ly, cell_size, height, mean, stdev, hmaj1, hmin1, n_cut, ridge, ridge_height, ridge_margin] = m3d.read_input(input_file_path)
+    inp = m3d.read_input(input_file_path)
 
-    """ calc some parameters from inputs """
-    # number of grids
-    nx = int(Lx / cell_size) + 1
-    ny = int(Ly / cell_size) + 1
+    file_type = inp["file_type"]
+    lx = inp["lx"]
+    ly = inp["ly"]
+    lz = inp["lz"]
+    nx = inp["nx"]
+    ny = inp["ny"]
+    nz = inp["nz"]
+    dx = inp["dx"]
+    mean = inp["mean"]
+    stdev = inp["stdev"]
+    hmaj1 = inp["hmaj1"]
+    hmin1 = inp["hmin1"]
+    seed = inp["seed"]
+    height = inp["height"]
+    n_cut = inp["n_cut"]
+    ridge = inp["ridge"]
+    height = inp["height"]
+    ridge_height = inp["ridge_height"]
+    ridge_margin = inp["ridge_margin"]
     # cell size
     xmin = 0.0
     ymin = 0.0  # grid origin
-    xmax = Lx + cell_size
-    ymax = Ly + cell_size  # calculate the extent of model
-    seed = rand.randint(7000, 8000)  # random number seed  for stochastic simulation
+    xmax = lx + dx
+    ymax = ly + dx  # calculate the extent of model
     cmap = plt.cm.plasma  # color min and max and using the plasma color map
     # cmin and cmax: min and max of colorbar
     #TODO: check how cmap is used. make the color closer to profilometer data.
 
-
     # name of the dir
-    dir_name = 'dim(' + str(Lx) + ',' + str(Ly) + ')_dimcorr(' + str(hmaj1) + ',' + str(hmin1) + ')_mean=' + str(mean) + '_stdev=' + str(stdev)
+    dir_name = 'dim(' + str(lx) + ',' + str(ly) + ')_dimcorr(' + str(hmaj1) + ',' + str(hmin1) + ')_mean=' + str(mean) + '_stdev=' + str(stdev)
 
     # create folder if not exist
     path = save_parent_dir + dir_name
@@ -46,7 +59,7 @@ def main():
     # Make a truth model / unconditional simulation
     # mean = 0.18; stdev = 0.05; cmin = 0.0; cmax = 0.3
     var = gsp.make_variogram(nug=0.0, nst=1, it1=1, cc1=1.0, azi1=90.0, hmaj1=hmaj1, hmin1=hmin1)
-    width = gsp.GSLIB_sgsim_2d_uncond(1, nx, ny, cell_size, seed + 3, var, "input/width_distribution")
+    width = gsp.GSLIB_sgsim_2d_uncond(1, nx, ny, dx, seed + 3, var, "input/width_distribution")
     width = gsp.affine(width, mean, stdev)
 
 # copy from here
@@ -108,32 +121,32 @@ def main():
         if ridge:
             # Create ridge in the middle
             # ridge location is going to be 3" heigher than the middle
-            ridge_loc_y = 0.5 * ymax # has to be 1 -> 3 in in the real sample
-
-            # determine the exact location of ridge (ridge location cannot be in the middle of the cell)
-            ridge_loc_y = int(ridge_loc_y / cell_size) * cell_size
+            ridge_loc_y = 0.5 * ymax + 3.0  # a little above from the middle
             # top of ridge
-            m3d.generateSTL_ridge(width, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, ridge_height, ridge_margin, height, filename)
+            # determine the exact location of ridge (ridge location cannot be in the middle of the cell)
+            # ridge_loc_y = int(ridge_loc_y / cell_size) * cell_size
+            # top of ridge
+            m3d.generateSTL_ridge(width, xmin, xmax, ymin, ymax, dx, ridge_loc_y, ridge_height, ridge_margin, height, filename)
             # top of ridge mirrored
-            m3d.generateSTL_ridge(width_mirror, xmin, xmax, ymin, ymax, cell_size, ridge_loc_y, -ridge_height, ridge_margin, height, filename + '_mirror')
+            m3d.generateSTL_ridge(width_mirror, xmin, xmax, ymin, ymax, dx, ridge_loc_y, -ridge_height, ridge_margin, height, filename + '_mirror')
 
         else:
 
             xmin = 0
-            xmax = width.shape[1] * cell_size
+            xmax = width.shape[1] * dx
             ymin = 0
-            ymax = width.shape[0] * cell_size
+            ymax = width.shape[0] * dx
             width_mirror = np.flipud(width_mirror)  # deal with mirroring problem just before writing the output file!!!! Otherwise bad things will happen.
             if file_type == 'stl':
                 # Generate STL file for 3D modeling
-                m3d.generateSTL(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
+                m3d.generateSTL(width, xmin, xmax, ymin, ymax, dx, height, filename)
                 # Generate STL file for matching surface
-                m3d.generateSTL(width_mirror, xmin, xmax, ymin, ymax, cell_size, height, filename + '_mirror')
+                m3d.generateSTL(width_mirror, xmin, xmax, ymin, ymax, dx, height, filename + '_mirror')
             elif file_type == 'ply':
                 # Generate XYZ data file (.ply file)
-                m3d.generatePLY(width, xmin, xmax, ymin, ymax, cell_size, height, 'surface')
+                m3d.generatePLY(width, xmin, xmax, ymin, ymax, dx, height, 'surface')
                 # Generate PLY for matching surface
-                m3d.generatePLY(width_mirror, xmin, xmax, ymin, ymax, cell_size, height, 'surface_mirror')
+                m3d.generatePLY(width_mirror, xmin, xmax, ymin, ymax, dx, height, 'surface_mirror')
             else:
                 print("Error: file_type is not defined. [main]")
 
@@ -141,8 +154,13 @@ def main():
         m3d.close_STL(filename + '_mirror')
 
         # generate profilometer file
-        m3d.create_profilometer_file(width, xmin, xmax, ymin, ymax, cell_size, height, filename)
+        m3d.create_profilometer_file(width, xmin, xmax, ymin, ymax, dx, height, filename)
 
+        apature = 0.078  # [inch]
+        filename = save_parent_dir + dir_name + '/apature'
+        m3d.open_STL(filename)
+        m3d.create_frac_apature(width, xmin, xmax, ymin, ymax, dx, apature, filename)
+        m3d.close_STL(filename)
 
 if __name__ == "__main__":
     main()
