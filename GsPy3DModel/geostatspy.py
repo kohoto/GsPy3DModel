@@ -9,6 +9,7 @@ import random as rand
 import math
 import scipy.signal as signal
 import decimal
+
 image_type = 'png';
 dpi = 600
 
@@ -22,7 +23,6 @@ def ndarray2GSLIB(array, data_file, col_name):
     if array.ndim == 2:
         ny = (array.shape[0])
         nx = (array.shape[1])
-        ncol = 1
         for iy in range(0, ny):
             for ix in range(0, nx):
                 file_out.write(str(array[ny - 1 - iy, ix]) + '\n')
@@ -39,7 +39,6 @@ def ndarray2GSLIB(array, data_file, col_name):
 
 # utility to convert GSLIB Geo-EAS files to a 1D or 2D numpy ndarray for use with Python methods
 def GSLIB2ndarray(data_file, kcol, nx, ny):
-    colArray = []
     if ny > 1:
         array = np.ndarray(shape=(ny, nx), dtype=float, order='F')
     else:
@@ -66,8 +65,6 @@ def GSLIB2ndarray(data_file, kcol, nx, ny):
 
 # utility to convert pandas DataFrame to a GSLIB Geo-EAS file for use with GSLIB methods
 def Dataframe2GSLIB(data_file, df):
-    colArray = []
-    colArray = df.columns
     ncol = len(df.columns)
     nrow = len(df.index)
     file_out = open(data_file, "w")
@@ -123,7 +120,6 @@ def hist_st(array, xmin, xmax, log, cumul, bins, weights, xlabel, title):
 
 # location map, reimplemention in Python of GSLIB locmap with MatPlotLib methods
 def locmap(df, xcol, ycol, vcol, xmin, xmax, ymin, ymax, vmin, vmax, title, xlabel, ylabel, vlabel, cmap, fig_name):
-    ixy = 0
     plt.figure(figsize=(8, 6))
     im = plt.scatter(df[xcol], df[ycol], s=None, c=df[vcol], marker=None, cmap=cmap, norm=None, vmin=vmin, vmax=vmax,
                      alpha=0.8, linewidths=0.8, verts=None, edgecolors="black")
@@ -141,7 +137,6 @@ def locmap(df, xcol, ycol, vcol, xmin, xmax, ymin, ymax, vmin, vmax, title, xlab
 
 # location map, reimplemention in Python of GSLIB locmap with MatPlotLib methods (version for subplots)
 def locmap_st(df, xcol, ycol, vcol, xmin, xmax, ymin, ymax, vmin, vmax, title, xlabel, ylabel, vlabel, cmap):
-    ixy = 0
     im = plt.scatter(df[xcol], df[ycol], s=None, c=df[vcol], marker=None, cmap=cmap, norm=None, vmin=vmin, vmax=vmax,
                      alpha=0.8, linewidths=0.8, verts=None, edgecolors="black")
     plt.title(title)
@@ -158,7 +153,7 @@ def locmap_st(df, xcol, ycol, vcol, xmin, xmax, ymin, ymax, vmin, vmax, title, x
 def pixelplt(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, ylabel, vlabel, cmap, fig_name):
     print(str(step))
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    fig, ax = plt.subplots(figsize=(7,3))
+    fig, ax = plt.subplots(figsize=(7, 3))
     im = ax.contourf(xx, yy, array, cmap=cmap, vmin=vmin, vmax=vmax, levels=np.linspace(vmin, vmax, 100))
     ax.set_title(title)
     ax.set_xlabel(xlabel)
@@ -167,7 +162,8 @@ def pixelplt(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, yla
     # setting for color bar
     decimal.getcontext().prec = 1
     imratio = array.shape[0] / array.shape[1]
-    cbar = plt.colorbar(im, ticks=np.linspace(float(decimal.Decimal(vmin)), float(decimal.Decimal(vmax)), 5), fraction=0.046 * imratio, pad=0.04)
+    cbar = plt.colorbar(im, ticks=np.linspace(float(decimal.Decimal(vmin)), float(decimal.Decimal(vmax)), 5),
+                        fraction=0.046 * imratio, pad=0.04)
     cbar.set_label(vlabel, rotation=270)
     fig.savefig(fig_name + '.' + image_type, dpi=dpi, transparent=True)
     fig.tight_layout()
@@ -178,7 +174,6 @@ def pixelplt(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, yla
 # pixel plot, reimplemention in Python of GSLIB pixelplt with MatPlotLib methods(version for subplots)
 def pixelplt_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, ylabel, vlabel, cmap):
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    ixy = 0
     x = [];
     y = [];
     v = []  # use dummy since scatter plot controls legend min and max appropriately and contour does not!
@@ -197,7 +192,6 @@ def pixelplt_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, 
 # pixel plot, reimplemention in Python of GSLIB pixelplt with MatPlotLib methods (version for subplots, log scale)
 def pixelplt_log_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlabel, ylabel, vlabel, cmap):
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    ixy = 0
     x = [];
     y = [];
     v = []  # use dummy since scatter plot controls legend min and max appropriately and contour does not!
@@ -210,7 +204,6 @@ def pixelplt_log_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlab
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    # plt.clim(vmin,vmax)
     cbar = plt.colorbar(im, orientation='vertical')
     cbar.set_label(vlabel, rotation=270, labelpad=20)
     return cs
@@ -220,7 +213,6 @@ def pixelplt_log_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, title, xlab
 def locpix(array, xmin, xmax, ymin, ymax, step, vmin, vmax, df, xcol, ycol, vcol, title, xlabel, ylabel, vlabel, cmap,
            fig_name):
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    ixy = 0
     plt.figure(figsize=(8, 6))
     cs = plt.contourf(xx, yy, array, cmap=cmap, vmin=vmin, vmax=vmax, levels=np.linspace(vmin, vmax, 100))
     im = plt.scatter(df[xcol], df[ycol], s=None, c=df[vcol], marker=None, cmap=cmap, vmin=vmin, vmax=vmax, alpha=0.8,
@@ -241,7 +233,6 @@ def locpix(array, xmin, xmax, ymin, ymax, step, vmin, vmax, df, xcol, ycol, vcol
 def locpix_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, df, xcol, ycol, vcol, title, xlabel, ylabel, vlabel,
               cmap):
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    ixy = 0
     cs = plt.contourf(xx, yy, array, cmap=cmap, vmin=vmin, vmax=vmax, levels=np.linspace(vmin, vmax, 100))
     im = plt.scatter(df[xcol], df[ycol], s=None, c=df[vcol], marker=None, cmap=cmap, vmin=vmin, vmax=vmax, alpha=0.8,
                      linewidths=0.8, verts=None, edgecolors="black")
@@ -258,7 +249,6 @@ def locpix_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, df, xcol, ycol, v
 def locpix_log_st(array, xmin, xmax, ymin, ymax, step, vmin, vmax, df, xcol, ycol, vcol, title, xlabel, ylabel, vlabel,
                   cmap, fig_name):
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
-    ixy = 0
     color_int = np.r_[np.log(vmin):np.log(vmax):0.5]
     color_int = np.exp(color_int)
     cs = plt.contourf(xx, yy, array, cmap=cmap, vmin=vmin, vmax=vmax, levels=color_int,
@@ -286,30 +276,30 @@ def affine(array, tmean, tstdev):
 
 # normal score transform, wrapper for nscore from GSLIB (.exe must be in working directory)(not used in this demo)
 def nscore(x):
-    import os
     import numpy as np
-    file = 'nscore_out.dat'
-    nx = np.ma.size(x);
+    initial_dir = os.getcwd()
+    os.chdir(os.path.dirname(__file__))
+
+    nx = np.ma.size(x)
     ny = 1
     ndarray2GSLIB(x, "nscore.dat", "value")
-    file = open("nscore.par", "w")
-    file.write("                  Parameters for NSCORE                                    \n")
-    file.write("                  *********************                                    \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETERS:                                                       \n")
-    file.write("nscore.dat           -file with data                                       \n")
-    file.write("1   0                    -  columns for variable and weight                \n")
-    file.write("-1.0e21   1.0e21         -  trimming limits                                \n")
-    file.write("0                        -1=transform according to specified ref. dist.    \n")
-    file.write("../histsmth/histsmth.out -  file with reference dist.                      \n")
-    file.write("1   2                    -  columns for variable and weight                \n")
-    file.write("nscore.out               -file for output                                  \n")
-    file.write("nscore.trn               -file for output transformation table             \n")
-    file.close()
+    nscore_lines = ["                  Parameters for NSCORE                                    \n",
+                    "                  *********************                                    \n",
+                    "                                                                           \n",
+                    "START OF PARAMETERS:                                                       \n",
+                    "nscore.dat           -file with data                                       \n",
+                    "1   0                    -  columns for variable and weight                \n",
+                    "-1.0e21   1.0e21         -  trimming limits                                \n",
+                    "0                        -1=transform according to specified ref. dist.    \n",
+                    "../histsmth/histsmth.out -  file with reference dist.                      \n",
+                    "1   2                    -  columns for variable and weight                \n",
+                    "nscore.out               -file for output                                  \n",
+                    "nscore.trn               -file for output transformation table             \n"]
+    open("nscore.par", 'w').write(''.join(nscore_lines))
 
     os.system('nscore.exe nscore.par')
-    file_in = 'nscore.out'
     y, name = GSLIB2ndarray('nscore.out', 1, nx, ny)
+    os.chdir(initial_dir)
     return (y)
 
 
@@ -330,7 +320,6 @@ def make_variogram(nug, nst, it1, cc1, azi1, hmaj1, hmin1, it2=1, cc2=0, azi2=0,
 
 # irregularly sampled variogram, 2D wrapper for gam from GSLIB (.exe must be in working directory)
 def gamv_2d(df, xcol, ycol, vcol, nlag, lagdist, azi, atol, bstand):
-    import os
     initial_dir = os.getcwd()
     os.chdir(os.path.dirname(__file__))
 
@@ -339,25 +328,25 @@ def gamv_2d(df, xcol, ycol, vcol, nlag, lagdist, azi, atol, bstand):
     npair = []
     df_ext = pd.DataFrame({'X': df[xcol], 'Y': df[ycol], 'Z': df[vcol]})
     Dataframe2GSLIB("gamv_out.dat", df_ext)
-    file = open("gamv.par", "w")
-    file.write("                  Parameters for GAMV                                      \n")
-    file.write("                  *******************                                      \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETERS:                                                       \n")
-    file.write("gamv_out.dat                    -file with data                            \n")
-    file.write("1   2   0                         -   columns for X, Y, Z coordinates      \n")
-    file.write("1   3   0                         -   number of variables,col numbers      \n")
-    file.write("-1.0e21     1.0e21                -   trimming limits                      \n")
-    file.write("gamv.out                          -file for variogram output               \n")
-    file.write(str(nlag) + "                      -number of lags                          \n")
-    file.write(str(lagdist) + "                       -lag separation distance                 \n")
-    file.write(str(lagdist * 0.5) + "                   -lag tolerance                           \n")
-    file.write("1                                 -number of directions                    \n")
-    file.write(str(azi) + " " + str(atol) + " 99999.9 0.0  90.0  50.0  -azm,atol,bandh,dip,dtol,bandv \n")
-    file.write(str(bstand) + "                    -standardize sills? (0=no, 1=yes)        \n")
-    file.write("1                                 -number of variograms                    \n")
-    file.write("1   1   1                         -tail var., head var., variogram type    \n")
-    file.close()
+
+    gamv_lines = ["                  Parameters for GAMV                                      \n",
+                  "                  *******************                                      \n",
+                  "                                                                           \n",
+                  "START OF PARAMETERS:                                                       \n",
+                  "gamv_out.dat                    -file with data                            \n",
+                  "1   2   0                         -   columns for X, Y, Z coordinates      \n",
+                  "1   3   0                         -   number of variables,col numbers      \n",
+                  "-1.0e21     1.0e21                -   trimming limits                      \n",
+                  "gamv.out                          -file for variogram output               \n",
+                  str(nlag) + "                      -number of lags                          \n",
+                  str(lagdist) + "                       -lag separation distance                 \n",
+                  str(lagdist * 0.5) + "                   -lag tolerance                           \n",
+                  "1                                 -number of directions                    \n",
+                  str(azi) + " " + str(atol) + " 99999.9 0.0  90.0  50.0  -azm,atol,bandh,dip,dtol,bandv \n",
+                  str(bstand) + "                    -standardize sills? (0=no, 1=yes)        \n",
+                  "1                                 -number of variograms                    \n",
+                  "1   1   1                         -tail var., head var., variogram type    \n"]
+    open("gamv.par", 'w').write(''.join(gamv_lines))
 
     os.system("gamv.exe gamv.par")
     reading = True
@@ -379,37 +368,30 @@ def gamv_2d(df, xcol, ycol, vcol, nlag, lagdist, azi, atol, bstand):
 
 # irregular spaced data, 2D wrapper for varmap from GSLIB (.exe must be in working directory)
 def varmapv_2d(df, xcol, ycol, vcol, nx, ny, lagdist, minpairs, vmax, bstand, title, vlabel):
-    import os
     import numpy as np
-
-    lag = [];
-    gamma = [];
-    npair = []
 
     df_ext = pd.DataFrame({'X': df[xcol], 'Y': df[ycol], 'Z': df[vcol]})
     Dataframe2GSLIB("varmap_out.dat", df_ext)
 
-    file = open("varmap.par", "w")
-
-    file.write("              Parameters for VARMAP                                        \n")
-    file.write("              *********************                                        \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETERS:                                                       \n")
-    file.write("varmap_out.dat          -file with data                                    \n")
-    file.write("1   3                        -   number of variables: column numbers       \n")
-    file.write("-1.0e21     1.0e21           -   trimming limits                           \n")
-    file.write("0                            -1=regular grid, 0=scattered values           \n")
-    file.write(" 50   50    1                -if =1: nx,     ny,   nz                      \n")
-    file.write("1.0  1.0  1.0                -       xsiz, ysiz, zsiz                      \n")
-    file.write("1   2   0                    -if =0: columns for x,y, z coordinates        \n")
-    file.write("varmap.out                   -file for variogram output                    \n")
-    file.write(str(nx) + " " + str(ny) + " 0 " + "-nxlag, nylag, nzlag                     \n")
-    file.write(str(lagdist) + " " + str(lagdist) + " 1.0              -dxlag, dylag, dzlag \n")
-    file.write(str(minpairs) + "             -minimum number of pairs                      \n")
-    file.write(str(bstand) + "               -standardize sill? (0=no, 1=yes)              \n")
-    file.write("1                            -number of variograms                         \n")
-    file.write("1   1   1                    -tail, head, variogram type                   \n")
-    file.close()
+    varmap_lines = ["              Parameters for VARMAP                                        \n",
+                    "              *********************                                        \n",
+                    "                                                                           \n",
+                    "START OF PARAMETERS:                                                       \n",
+                    "varmap_out.dat          -file with data                                    \n",
+                    "1   3                        -   number of variables: column numbers       \n",
+                    "-1.0e21     1.0e21           -   trimming limits                           \n",
+                    "0                            -1=regular grid, 0=scattered values           \n",
+                    " 50   50    1                -if =1: nx,     ny,   nz                      \n",
+                    "1.0  1.0  1.0                -       xsiz, ysiz, zsiz                      \n",
+                    "1   2   0                    -if =0: columns for x,y, z coordinates        \n",
+                    "varmap.out                   -file for variogram output                    \n",
+                    str(nx) + " " + str(ny) + " 0 " + "-nxlag, nylag, nzlag                     \n",
+                    str(lagdist) + " " + str(lagdist) + " 1.0              -dxlag, dylag, dzlag \n",
+                    str(minpairs) + "             -minimum number of pairs                      \n",
+                    str(bstand) + "               -standardize sill? (0=no, 1=yes)              \n",
+                    "1                            -number of variograms                         \n",
+                    "1   1   1                    -tail, head, variogram type                   \n"]
+    open("varmap.par", 'w').write(''.join(varmap_lines))
 
     os.system('varmap.exe varmap.par')
     nnx = nx * 2 + 1;
@@ -426,32 +408,28 @@ def varmapv_2d(df, xcol, ycol, vcol, nx, ny, lagdist, minpairs, vmax, bstand, ti
 
 # regular spaced data, 2D wrapper for varmap from GSLIB (.exe must be in working directory)
 def varmap_2d(array, nx, ny, hsiz, nlagx, nlagy, minpairs, vmax, bstand, title, vlabel):
-    import os
-    import numpy as np
 
     ndarray2GSLIB(array, "varmap_out.dat", "gam.dat")
 
-    file = open("varmap.par", "w")
-
-    file.write("              Parameters for VARMAP                                        \n")
-    file.write("              *********************                                        \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETERS:                                                       \n")
-    file.write("varmap_out.dat          -file with data                                    \n")
-    file.write("1   1                        -   number of variables: column numbers       \n")
-    file.write("-1.0e21     1.0e21           -   trimming limits                           \n")
-    file.write("1                            -1=regular grid, 0=scattered values           \n")
-    file.write(str(nx) + " " + str(ny) + " 1  -if =1: nx,     ny,   nz                     \n")
-    file.write(str(hsiz) + " " + str(hsiz) + " 1.0  - xsiz, ysiz, zsiz                     \n")
-    file.write("1   2   0                    -if =0: columns for x,y, z coordinates        \n")
-    file.write("varmap.out                   -file for variogram output                    \n")
-    file.write(str(nlagx) + " " + str(nlagy) + " 0 " + "-nxlag, nylag, nzlag               \n")
-    file.write(str(hsiz) + " " + str(hsiz) + " 1.0              -dxlag, dylag, dzlag       \n")
-    file.write(str(minpairs) + "             -minimum number of pairs                      \n")
-    file.write(str(bstand) + "               -standardize sill? (0=no, 1=yes)              \n")
-    file.write("1                            -number of variograms                         \n")
-    file.write("1   1   1                    -tail, head, variogram type                   \n")
-    file.close()
+    varmap_lines = ["              Parameters for VARMAP                                        \n",
+                    "              *********************                                        \n",
+                    "                                                                           \n",
+                    "START OF PARAMETERS:                                                       \n",
+                    "varmap_out.dat          -file with data                                    \n",
+                    "1   1                        -   number of variables: column numbers       \n",
+                    "-1.0e21     1.0e21           -   trimming limits                           \n",
+                    "1                            -1=regular grid, 0=scattered values           \n",
+                    str(nx) + " " + str(ny) + " 1  -if =1: nx,     ny,   nz                     \n",
+                    str(hsiz) + " " + str(hsiz) + " 1.0  - xsiz, ysiz, zsiz                     \n",
+                    "1   2   0                    -if =0: columns for x,y, z coordinates        \n",
+                    "varmap.out                   -file for variogram output                    \n",
+                    str(nlagx) + " " + str(nlagy) + " 0 " + "-nxlag, nylag, nzlag               \n",
+                    str(hsiz) + " " + str(hsiz) + " 1.0              -dxlag, dylag, dzlag       \n",
+                    str(minpairs) + "             -minimum number of pairs                      \n",
+                    str(bstand) + "               -standardize sill? (0=no, 1=yes)              \n",
+                    "1                            -number of variograms                         \n",
+                    "1   1   1                    -tail, head, variogram type                   \n"]
+    open("varmap.par", 'w').write(''.join(varmap_lines))
 
     os.system('varmap.exe varmap.par')
     nnx = nlagx * 2 + 1;
@@ -468,27 +446,23 @@ def varmap_2d(array, nx, ny, hsiz, nlagx, nlagy, minpairs, vmax, bstand, title, 
 
 # variogram model, 2D wrapper for vmodel from GSLIB (.exe must be in working directory)
 def vmodel_2d(nlag, step, azi, nug, nst, tstr1, c1, azi1, rmaj1, rmin1, tstr2=1, c2=0, azi2=0, rmaj2=0, rmin2=0):
-    import os
-    import numpy as np
-
     lag = [];
     gamma = []
 
-    file = open("vmodel.par", "w")
-    file.write("                                                                           \n")
-    file.write("                  Parameters for VMODEL                                    \n")
-    file.write("                  *********************                                    \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETERS:                                                       \n")
-    file.write("vmodel.var                   -file for variogram output                    \n")
-    file.write("1 " + str(nlag) + "          -number of directions and lags                \n")
-    file.write(str(azi) + " 0.0 " + str(step) + " -azm, dip, lag distance                  \n")
-    file.write(str(nst) + " " + str(nug) + " -nst, nugget effect                           \n")
-    file.write(str(tstr1) + " " + str(c1) + " " + str(azi1) + " 0.0   0.0   0.0 -it,cc,ang1,ang2,ang3 \n")
-    file.write(str(rmaj1) + " " + str(rmin1) + " 0.0 -a_hmax, a_hmin, a_vert               \n")
-    file.write(str(tstr2) + " " + str(c2) + " " + str(azi2) + " 0.0   0.0   0.0 -it,cc,ang1,ang2,ang3 \n")
-    file.write(str(rmaj2) + " " + str(rmin2) + " 0.0 -a_hmax, a_hmin, a_vert               \n")
-    file.close()
+    vmodel_lines = ["                                                                           \n",
+                    "                  Parameters for VMODEL                                    \n",
+                    "                  *********************                                    \n",
+                    "                                                                           \n",
+                    "START OF PARAMETERS:                                                       \n",
+                    "vmodel.var                   -file for variogram output                    \n",
+                    "1 " + str(nlag) + "          -number of directions and lags                \n",
+                    str(azi) + " 0.0 " + str(step) + " -azm, dip, lag distance                  \n",
+                    str(nst) + " " + str(nug) + " -nst, nugget effect                           \n",
+                    str(tstr1) + " " + str(c1) + " " + str(azi1) + " 0.0   0.0   0.0 -it,cc,ang1,ang2,ang3 \n",
+                    str(rmaj1) + " " + str(rmin1) + " 0.0 -a_hmax, a_hmin, a_vert               \n",
+                    str(tstr2) + " " + str(c2) + " " + str(azi2) + " 0.0   0.0   0.0 -it,cc,ang1,ang2,ang3 \n",
+                    str(rmaj2) + " " + str(rmin2) + " 0.0 -a_hmax, a_hmin, a_vert               \n"]
+    open("vmodel.par", 'w').write(''.join(vmodel_lines))
 
     os.system('vmodel.exe vmodel.par')
     reading = True
@@ -509,8 +483,6 @@ def vmodel_2d(nlag, step, azi, nug, nst, tstr1, c1, azi1, rmaj1, rmin1, tstr2=1,
 
 # cell-based declustering, 2D wrapper for declus from GSLIB (.exe must be in working directory)
 def declus(df, xcol, ycol, vcol, cmin, cmax, cnum, bmin):
-    import os
-    import numpy as np
     nrow = len(df)
     weights = []
     file = 'declus_out.dat'
@@ -525,21 +497,21 @@ def declus(df, xcol, ycol, vcol, cmin, cmax, cnum, bmin):
             str(df.iloc[irow][xcol]) + ' ' + str(df.iloc[irow][ycol]) + ' ' + str(df.iloc[irow][vcol]) + ' \n')
     file_out.close()
 
-    file = open("declus.par", "w")
-    file.write("                  Parameters for DECLUS                                    \n")
-    file.write("                  *********************                                    \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETERS:                                                       \n")
-    file.write("declus_out.dat           -file with data                                   \n")
-    file.write("1   2   0   3               -  columns for X, Y, Z, and variable           \n")
-    file.write("-1.0e21     1.0e21          -  trimming limits                             \n")
-    file.write("declus.sum                  -file for summary output                       \n")
-    file.write("declus.out                  -file for output with data & weights           \n")
-    file.write("1.0   1.0                   -Y and Z cell anisotropy (Ysize=size*Yanis)    \n")
-    file.write(str(bmin) + "                -0=look for minimum declustered mean (1=max)   \n")
-    file.write(str(cnum) + " " + str(cmin) + " " + str(cmax) + " -number of cell sizes, min size, max size      \n")
-    file.write("5                           -number of origin offsets                      \n")
-    file.close()
+    declus_lines = ["                  Parameters for DECLUS                                    \n",
+                    "                  *********************                                    \n",
+                    "                                                                           \n",
+                    "START OF PARAMETERS:                                                       \n",
+                    "declus_out.dat           -file with data                                   \n",
+                    "1   2   0   3               -  columns for X, Y, Z, and variable           \n",
+                    "-1.0e21     1.0e21          -  trimming limits                             \n",
+                    "declus.sum                  -file for summary output                       \n",
+                    "declus.out                  -file for output with data & weights           \n",
+                    "1.0   1.0                   -Y and Z cell anisotropy (Ysize=size*Yanis)    \n",
+                    str(bmin) + "                -0=look for minimum declustered mean (1=max)   \n",
+                    str(cnum) + " " + str(cmin) + " " + str(
+                        cmax) + " -number of cell sizes, min size, max size      \n",
+                    "5                           -number of origin offsets                      \n"]
+    open("declus.par", 'w').write(''.join(declus_lines))
 
     os.system('declus.exe declus.par')
     df = GSLIB2Dataframe("declus.out")
@@ -551,7 +523,6 @@ def declus(df, xcol, ycol, vcol, cmin, cmax, cnum, bmin):
 
 # sequential Gaussian simulation, 2D unconditional wrapper for sgsim from GSLIB (.exe must be in working directory)
 def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
-    import os
     import numpy as np
     cd = os.getcwd()
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -572,49 +543,47 @@ def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
     hmn = hsiz * 0.5
     hctab = int(max_range / hsiz) * 2 + 1
 
-    sim_array = np.random.rand(nx, ny)
 
-    file = open("sgsim.par", "w")
-    file.write("              Parameters for SGSIM                                         \n")
-    file.write("              ********************                                         \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETER:                                                        \n")
-    file.write("none                          -file with data                              \n")
-    file.write("1  2  0  3  5  0              -  columns for X,Y,Z,vr,wt,sec.var.          \n")
-    file.write("-1.0e21 1.0e21                -  trimming limits                           \n")
-    file.write("0                             -transform the data (0=no, 1=yes)            \n")
-    file.write("none.trn                      -  file for output trans table               \n")
-    file.write("1                             -  consider ref. dist (0=no, 1=yes)          \n")
-    file.write("none.dat                      -  file with ref. dist distribution          \n")
-    file.write("1  0                          -  columns for vr and wt                     \n")
-    file.write("-4.0    4.0                   -  zmin,zmax(tail extrapolation)             \n")
-    file.write("1      -4.0                   -  lower tail option, parameter              \n")
-    file.write("1       4.0                   -  upper tail option, parameter              \n")
-    file.write("0                             -debugging level: 0,1,2,3                    \n")
-    file.write("nonw.dbg                      -file for debugging output                   \n")
-    file.write(str(output_file) + "           -file for simulation output                  \n")
-    file.write(str(nreal) + "                 -number of realizations to generate          \n")
-    file.write(str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write(str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write("1 0.0 1.0                     - nz zmn zsiz                                \n")
-    file.write(str(seed) + "                  -random number seed                          \n")
-    file.write("0     8                       -min and max original data for sim           \n")
-    file.write("12                            -number of simulated nodes to use            \n")
-    file.write("0                             -assign data to nodes (0=no, 1=yes)          \n")
-    file.write("1     3                       -multiple grid search (0=no, 1=yes),num      \n")
-    file.write("0                             -maximum data per octant (0=not used)        \n")
-    file.write(str(max_range) + " " + str(max_range) + " 1.0 -maximum search  (hmax,hmin,vert) \n")
-    file.write(str(azi1) + "   0.0   0.0       -angles for search ellipsoid                 \n")
-    file.write(str(hctab) + " " + str(hctab) + " 1 -size of covariance lookup table        \n")
-    file.write("0     0.60   1.0              -ktype: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC        \n")
-    file.write("none.dat                      -  file with LVM, EXDR, or COLC variable     \n")
-    file.write("4                             -  column for secondary variable             \n")
-    file.write(str(nst) + " " + str(nug) + "  -nst, nugget effect                          \n")
-    file.write(str(it1) + " " + str(cc1) + " " + str(azi1) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n")
-    file.write(" " + str(hmaj1) + " " + str(hmin1) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
-    file.write(str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n")
-    file.write(" " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
-    file.close()
+    sgsim_lines = ["              Parameters for SGSIM                                         \n",
+                   "              ********************                                         \n",
+                   "                                                                           \n",
+                   "START OF PARAMETER:                                                        \n",
+                   "none                          -file with data                              \n",
+                   "1  2  0  3  5  0              -  columns for X,Y,Z,vr,wt,sec.var.          \n",
+                   "-1.0e21 1.0e21                -  trimming limits                           \n",
+                   "0                             -transform the data (0=no, 1=yes)            \n",
+                   "none.trn                      -  file for output trans table               \n",
+                   "1                             -  consider ref. dist (0=no, 1=yes)          \n",
+                   "none.dat                      -  file with ref. dist distribution          \n",
+                   "1  0                          -  columns for vr and wt                     \n",
+                   "-4.0    4.0                   -  zmin,zmax(tail extrapolation)             \n",
+                   "1      -4.0                   -  lower tail option, parameter              \n",
+                   "1       4.0                   -  upper tail option, parameter              \n",
+                   "0                             -debugging level: 0,1,2,3                    \n",
+                   "nonw.dbg                      -file for debugging output                   \n",
+                   str(output_file) + "           -file for simulation output                  \n",
+                   str(nreal) + "                 -number of realizations to generate          \n",
+                   str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                   str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                   "1 0.0 1.0                     - nz zmn zsiz                                \n",
+                   str(seed) + "                  -random number seed                          \n",
+                   "0     8                       -min and max original data for sim           \n",
+                   "12                            -number of simulated nodes to use            \n",
+                   "0                             -assign data to nodes (0=no, 1=yes)          \n",
+                   "1     3                       -multiple grid search (0=no, 1=yes),num      \n",
+                   "0                             -maximum data per octant (0=not used)        \n",
+                   str(max_range) + " " + str(max_range) + " 1.0 -maximum search  (hmax,hmin,vert) \n",
+                   str(azi1) + "   0.0   0.0       -angles for search ellipsoid                 \n",
+                   str(hctab) + " " + str(hctab) + " 1 -size of covariance lookup table        \n",
+                   "0     0.60   1.0              -ktype: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC        \n",
+                   "none.dat                      -  file with LVM, EXDR, or COLC variable     \n",
+                   "4                             -  column for secondary variable             \n",
+                   str(nst) + " " + str(nug) + "  -nst, nugget effect                          \n",
+                   str(it1) + " " + str(cc1) + " " + str(azi1) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n",
+                   " " + str(hmaj1) + " " + str(hmin1) + " 1.0 - a_hmax, a_hmin, a_vert        \n",
+                   str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n",
+                   " " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n"]
+    open("sgsim.par", 'w').write(''.join(sgsim_lines))
     print(os.getcwd())
     os.system('"sgsim.exe sgsim.par"')
     sim_array = GSLIB2ndarray(output_file, 0, nx, ny)
@@ -625,14 +594,11 @@ def GSLIB_sgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, output_file):
 
 # kriging estimation, 2D wrapper for kb2d from GSLIB (.exe must be in working directory)
 def GSLIB_kb2d_2d(df, xcol, ycol, vcol, nx, ny, hsiz, var, output_file):
-    import os
     import numpy as np
 
     X = df[xcol];
     Y = df[ycol];
     V = df[vcol]
-    var_min = V.values.min();
-    var_max = V.values.max()
     df_temp = pd.DataFrame({'X': X, 'Y': Y, 'Var': V})
     Dataframe2GSLIB('data_temp.dat', df_temp)
 
@@ -650,34 +616,29 @@ def GSLIB_kb2d_2d(df, xcol, ycol, vcol, nx, ny, hsiz, var, output_file):
     hmin2 = var['hmin2']
     max_range = max(hmaj1, hmaj2)
     hmn = hsiz * 0.5
-    hctab = int(max_range / hsiz) * 2 + 1
 
-    est_array = np.random.rand(nx, ny)
-    var_array = np.random.rand(nx, ny)
-
-    file = open("kb2d.par", "w")
-    file.write("              Parameters for KB2D                                          \n")
-    file.write("              ********************                                         \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETER:                                                        \n")
-    file.write("data_temp.dat                         -file with data                      \n")
-    file.write("1  2  3                               -  columns for X,Y,vr                \n")
-    file.write("-1.0e21   1.0e21                      -   trimming limits                  \n")
-    file.write("0                                     -debugging level: 0,1,2,3            \n")
-    file.write("none.dbg                              -file for debugging output           \n")
-    file.write(str(output_file) + "                   -file for kriged output              \n")
-    file.write(str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write(str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write("1    1                                -x and y block discretization        \n")
-    file.write("1    30                               -min and max data for kriging        \n")
-    file.write(str(max_range) + "                     -maximum search radius               \n")
-    file.write("1    -9999.9                          -0=SK, 1=OK,  (mean if SK)           \n")
-    file.write(str(nst) + " " + str(nug) + "          -nst, nugget effect                  \n")
-    file.write(str(it1) + " " + str(cc1) + " " + str(azi1) + " " + str(hmaj1) + " " + str(
-        hmin1) + " -it, c ,azm ,a_max ,a_min \n")
-    file.write(str(it2) + " " + str(cc2) + " " + str(azi2) + " " + str(hmaj2) + " " + str(
-        hmin2) + " -it, c ,azm ,a_max ,a_min \n")
-    file.close()
+    kb2d_lines = ["              Parameters for KB2D                                          \n",
+                  "              ********************                                         \n",
+                  "                                                                           \n",
+                  "START OF PARAMETER:                                                        \n",
+                  "data_temp.dat                         -file with data                      \n",
+                  "1  2  3                               -  columns for X,Y,vr                \n",
+                  "-1.0e21   1.0e21                      -   trimming limits                  \n",
+                  "0                                     -debugging level: 0,1,2,3            \n",
+                  "none.dbg                              -file for debugging output           \n",
+                  str(output_file) + "                   -file for kriged output              \n",
+                  str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                  str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                  "1    1                                -x and y block discretization        \n",
+                  "1    30                               -min and max data for kriging        \n",
+                  str(max_range) + "                     -maximum search radius               \n",
+                  "1    -9999.9                          -0=SK, 1=OK,  (mean if SK)           \n",
+                  str(nst) + " " + str(nug) + "          -nst, nugget effect                  \n",
+                  str(it1) + " " + str(cc1) + " " + str(azi1) + " " + str(hmaj1) + " " + str(
+                      hmin1) + " -it, c ,azm ,a_max ,a_min \n",
+                  str(it2) + " " + str(cc2) + " " + str(azi2) + " " + str(hmaj2) + " " + str(
+                      hmin2) + " -it, c ,azm ,a_max ,a_min \n"]
+    open("kb2d.par", 'w').write(''.join(kb2d_lines))
 
     os.system('"kb2d.exe kb2d.par"')
     est_array = GSLIB2ndarray(output_file, 0, nx, ny)
@@ -687,7 +648,6 @@ def GSLIB_kb2d_2d(df, xcol, ycol, vcol, nx, ny, hsiz, var, output_file):
 
 # sequential Gaussian simulation, 2D wrapper for sgsim from GSLIB (.exe must be in working directory)
 def GSLIB_sgsim_2d(nreal, df, xcol, ycol, vcol, nx, ny, hsiz, seed, var, output_file):
-    import os
     import numpy as np
 
     X = df[xcol];
@@ -717,46 +677,46 @@ def GSLIB_sgsim_2d(nreal, df, xcol, ycol, vcol, nx, ny, hsiz, seed, var, output_
     sim_array = np.random.rand(nx, ny)
 
     file = open("../GsPy3DModel/sgsim.par", "w")
-    file.write("              Parameters for SGSIM                                         \n")
-    file.write("              ********************                                         \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETER:                                                        \n")
-    file.write("data_temp.dat                 -file with data                              \n")
-    file.write("1  2  0  3  0  0              -  columns for X,Y,Z,vr,wt,sec.var.          \n")
-    file.write("-1.0e21 1.0e21                -  trimming limits                           \n")
-    file.write("1                             -transform the data (0=no, 1=yes)            \n")
-    file.write("none.trn                      -  file for output trans table               \n")
-    file.write("0                             -  consider ref. dist (0=no, 1=yes)          \n")
-    file.write("none.dat                      -  file with ref. dist distribution          \n")
-    file.write("1  0                          -  columns for vr and wt                     \n")
-    file.write(str(var_min) + " " + str(var_max) + "   zmin,zmax(tail extrapolation)       \n")
-    file.write("1   " + str(var_min) + "      -  lower tail option, parameter              \n")
-    file.write("1   " + str(var_max) + "      -  upper tail option, parameter              \n")
-    file.write("0                             -debugging level: 0,1,2,3                    \n")
-    file.write("nonw.dbg                      -file for debugging output                   \n")
-    file.write(str(output_file) + "           -file for simulation output                  \n")
-    file.write(str(nreal) + "                 -number of realizations to generate          \n")
-    file.write(str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write(str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write("1 0.0 1.0                     - nz zmn zsiz                                \n")
-    file.write(str(seed) + "                  -random number seed                          \n")
-    file.write("0     8                       -min and max original data for sim           \n")
-    file.write("12                            -number of simulated nodes to use            \n")
-    file.write("0                             -assign data to nodes (0=no, 1=yes)          \n")
-    file.write("1     3                       -multiple grid search (0=no, 1=yes),num      \n")
-    file.write("0                             -maximum data per octant (0=not used)        \n")
-    file.write(str(max_range) + " " + str(max_range) + " 1.0 -maximum search  (hmax,hmin,vert) \n")
-    file.write(str(azi1) + "   0.0   0.0       -angles for search ellipsoid                 \n")
-    file.write(str(hctab) + " " + str(hctab) + " 1 -size of covariance lookup table        \n")
-    file.write("0     0.60   1.0              -ktype: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC        \n")
-    file.write("none.dat                      -  file with LVM, EXDR, or COLC variable     \n")
-    file.write("4                             -  column for secondary variable             \n")
-    file.write(str(nst) + " " + str(nug) + "  -nst, nugget effect                          \n")
-    file.write(str(it1) + " " + str(cc1) + " " + str(azi1) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n")
-    file.write(" " + str(hmaj1) + " " + str(hmin1) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
-    file.write(str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n")
-    file.write(" " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
-    file.close()
+    sgsim_lines = ["              Parameters for SGSIM                                         \n",
+                   "              ********************                                         \n",
+                   "                                                                           \n",
+                   "START OF PARAMETER:                                                        \n",
+                   "data_temp.dat                 -file with data                              \n",
+                   "1  2  0  3  0  0              -  columns for X,Y,Z,vr,wt,sec.var.          \n",
+                   "-1.0e21 1.0e21                -  trimming limits                           \n",
+                   "1                             -transform the data (0=no, 1=yes)            \n",
+                   "none.trn                      -  file for output trans table               \n",
+                   "0                             -  consider ref. dist (0=no, 1=yes)          \n",
+                   "none.dat                      -  file with ref. dist distribution          \n",
+                   "1  0                          -  columns for vr and wt                     \n",
+                   str(var_min) + " " + str(var_max) + "   zmin,zmax(tail extrapolation)       \n",
+                   "1   " + str(var_min) + "      -  lower tail option, parameter              \n",
+                   "1   " + str(var_max) + "      -  upper tail option, parameter              \n",
+                   "0                             -debugging level: 0,1,2,3                    \n",
+                   "nonw.dbg                      -file for debugging output                   \n",
+                   str(output_file) + "           -file for simulation output                  \n",
+                   str(nreal) + "                 -number of realizations to generate          \n",
+                   str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                   str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                   "1 0.0 1.0                     - nz zmn zsiz                                \n",
+                   str(seed) + "                  -random number seed                          \n",
+                   "0     8                       -min and max original data for sim           \n",
+                   "12                            -number of simulated nodes to use            \n",
+                   "0                             -assign data to nodes (0=no, 1=yes)          \n",
+                   "1     3                       -multiple grid search (0=no, 1=yes),num      \n",
+                   "0                             -maximum data per octant (0=not used)        \n",
+                   str(max_range) + " " + str(max_range) + " 1.0 -maximum search  (hmax,hmin,vert) \n",
+                   str(azi1) + "   0.0   0.0       -angles for search ellipsoid                 \n",
+                   str(hctab) + " " + str(hctab) + " 1 -size of covariance lookup table        \n",
+                   "0     0.60   1.0              -ktype: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC        \n",
+                   "none.dat                      -  file with LVM, EXDR, or COLC variable     \n",
+                   "4                             -  column for secondary variable             \n",
+                   str(nst) + " " + str(nug) + "  -nst, nugget effect                          \n",
+                   str(it1) + " " + str(cc1) + " " + str(azi1) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n",
+                   " " + str(hmaj1) + " " + str(hmin1) + " 1.0 - a_hmax, a_hmin, a_vert        \n",
+                   str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3\n",
+                   " " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n"]
+    open("sgsim.par", 'w').write(''.join(sgsim_lines))
 
     os.system('"sgsim.exe sgsim.par"')
     sim_array = GSLIB2ndarray(output_file, 0, nx, ny)
@@ -765,7 +725,6 @@ def GSLIB_sgsim_2d(nreal, df, xcol, ycol, vcol, nx, ny, hsiz, seed, var, output_
 
 # sequential Gaussian simulation, 2D unconditional wrapper for sgsim from GSLIB (.exe must be in working directory)
 def GSLIB_cosgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, sec, correl, output_file):
-    import os
     import numpy as np
     nug = var['nug']
     nst = var['nst'];
@@ -787,47 +746,46 @@ def GSLIB_cosgsim_2d_uncond(nreal, nx, ny, hsiz, seed, var, sec, correl, output_
 
     ndarray2GSLIB(sec, "sec.dat", 'sec_dat')
 
-    file = open("../GsPy3DModel/sgsim.par", "w")
-    file.write("              Parameters for SGSIM                                         \n")
-    file.write("              ********************                                         \n")
-    file.write("                                                                           \n")
-    file.write("START OF PARAMETER:                                                        \n")
-    file.write("none                          -file with data                              \n")
-    file.write("1  2  0  3  5  0              -  columns for X,Y,Z,vr,wt,sec.var.          \n")
-    file.write("-1.0e21 1.0e21                -  trimming limits                           \n")
-    file.write("0                             -transform the data (0=no, 1=yes)            \n")
-    file.write("none.trn                      -  file for output trans table               \n")
-    file.write("0                             -  consider ref. dist (0=no, 1=yes)          \n")
-    file.write("none.dat                      -  file with ref. dist distribution          \n")
-    file.write("1  0                          -  columns for vr and wt                     \n")
-    file.write("-4.0    4.0                   -  zmin,zmax(tail extrapolation)             \n")
-    file.write("1      -4.0                   -  lower tail option, parameter              \n")
-    file.write("1       4.0                   -  upper tail option, parameter              \n")
-    file.write("0                             -debugging level: 0,1,2,3                    \n")
-    file.write("nonw.dbg                      -file for debugging output                   \n")
-    file.write(str(output_file) + "           -file for simulation output                  \n")
-    file.write(str(nreal) + "                 -number of realizations to generate          \n")
-    file.write(str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write(str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n")
-    file.write("1 0.0 1.0                     - nz zmn zsiz                                \n")
-    file.write(str(seed) + "                  -random number seed                          \n")
-    file.write("0     8                       -min and max original data for sim           \n")
-    file.write("12                            -number of simulated nodes to use            \n")
-    file.write("0                             -assign data to nodes (0=no, 1=yes)          \n")
-    file.write("1     3                       -multiple grid search (0=no, 1=yes),num      \n")
-    file.write("0                             -maximum data per octant (0=not used)        \n")
-    file.write(str(max_range) + " " + str(max_range) + " 1.0 -maximum search  (hmax,hmin,vert) \n")
-    file.write(str(azi1) + "   0.0   0.0       -angles for search ellipsoid                 \n")
-    file.write(str(hctab) + " " + str(hctab) + " 1 -size of covariance lookup table        \n")
-    file.write("4 " + str(correl) + " 1.0     -ktype: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC        \n")
-    file.write("sec.dat                       -  file with LVM, EXDR, or COLC variable     \n")
-    file.write("1                             -  column for secondary variable             \n")
-    file.write(str(nst) + " " + str(nug) + "  -nst, nugget effect                          \n")
-    file.write(str(it1) + " " + str(cc1) + " " + str(azi1) + " 0.0 0.0 -it,cc,ang1,ang2,ang3 \n")
-    file.write(" " + str(hmaj1) + " " + str(hmin1) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
-    file.write(str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3 \n")
-    file.write(" " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n")
-    file.close()
+    sgsim_lines = ["              Parameters for SGSIM                                         \n",
+                   "              ********************                                         \n",
+                   "                                                                           \n",
+                   "START OF PARAMETER:                                                        \n",
+                   "none                          -file with data                              \n",
+                   "1  2  0  3  5  0              -  columns for X,Y,Z,vr,wt,sec.var.          \n",
+                   "-1.0e21 1.0e21                -  trimming limits                           \n",
+                   "0                             -transform the data (0=no, 1=yes)            \n",
+                   "none.trn                      -  file for output trans table               \n",
+                   "0                             -  consider ref. dist (0=no, 1=yes)          \n",
+                   "none.dat                      -  file with ref. dist distribution          \n",
+                   "1  0                          -  columns for vr and wt                     \n",
+                   "-4.0    4.0                   -  zmin,zmax(tail extrapolation)             \n",
+                   "1      -4.0                   -  lower tail option, parameter              \n",
+                   "1       4.0                   -  upper tail option, parameter              \n",
+                   "0                             -debugging level: 0,1,2,3                    \n",
+                   "nonw.dbg                      -file for debugging output                   \n",
+                   str(output_file) + "           -file for simulation output                  \n",
+                   str(nreal) + "                 -number of realizations to generate          \n",
+                   str(nx) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                   str(ny) + " " + str(hmn) + " " + str(hsiz) + "                              \n",
+                   "1 0.0 1.0                     - nz zmn zsiz                                \n",
+                   str(seed) + "                  -random number seed                          \n",
+                   "0     8                       -min and max original data for sim           \n",
+                   "12                            -number of simulated nodes to use            \n",
+                   "0                             -assign data to nodes (0=no, 1=yes)          \n",
+                   "1     3                       -multiple grid search (0=no, 1=yes),num      \n",
+                   "0                             -maximum data per octant (0=not used)        \n",
+                   str(max_range) + " " + str(max_range) + " 1.0 -maximum search  (hmax,hmin,vert) \n",
+                   str(azi1) + "   0.0   0.0       -angles for search ellipsoid                 \n",
+                   str(hctab) + " " + str(hctab) + " 1 -size of covariance lookup table        \n",
+                   "4 " + str(correl) + " 1.0     -ktype: 0=SK,1=OK,2=LVM,3=EXDR,4=COLC        \n",
+                   "sec.dat                       -  file with LVM, EXDR, or COLC variable     \n",
+                   "1                             -  column for secondary variable             \n",
+                   str(nst) + " " + str(nug) + "  -nst, nugget effect                          \n",
+                   str(it1) + " " + str(cc1) + " " + str(azi1) + " 0.0 0.0 -it,cc,ang1,ang2,ang3 \n",
+                   " " + str(hmaj1) + " " + str(hmin1) + " 1.0 - a_hmax, a_hmin, a_vert        \n",
+                   str(it2) + " " + str(cc2) + " " + str(azi2) + " 0.0 0.0 -it,cc,ang1,ang2,ang3 \n",
+                   " " + str(hmaj2) + " " + str(hmin2) + " 1.0 - a_hmax, a_hmin, a_vert        \n"]
+    open("../GsPy3DModel/sgsim.par", 'w').write(''.join(sgsim_lines))
 
     os.system('"sgsim.exe sgsim.par"')
     sim_array = GSLIB2ndarray(output_file, 0, nx, ny)
@@ -841,8 +799,6 @@ def sample(array, xmin, xmax, ymin, ymax, step, name, df, xcol, ycol):
         nx = (array.shape[1])
     else:
         print('Array must be 2D')
-    x = [];
-    y = [];
     v = []
     nsamp = len(df)
     for isamp in range(0, nsamp):
@@ -866,9 +822,7 @@ def gkern(kernlen=21, std=3):  # Stack overflow solution from Teddy Hartano
 def regular_sample(array, xmin, xmax, ymin, ymax, step, mx, my, name):
     x = [];
     y = [];
-    v = [];
-    iix = 0;
-    iiy = 0;
+    v = []
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax, ymin, -1 * step))
     iiy = 0
     for iy in range(0, ny):
@@ -891,9 +845,7 @@ def random_sample(array, xmin, xmax, ymin, ymax, step, nsamp, name):
     import random as rand
     x = [];
     y = [];
-    v = [];
-    iix = 0;
-    iiy = 0;
+    v = []
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax - 1, ymin - 1, -1 * step))
     ny = xx.shape[0]
     nx = xx.shape[1]
@@ -910,11 +862,6 @@ def random_sample(array, xmin, xmax, ymin, ymax, step, nsamp, name):
 
 # Take spatial data from a DataFrame and make a sparse ndarray (NaN where no data in cell)
 def DataFrame2ndarray(df, xcol, ycol, vcol, xmin, xmax, ymin, ymax, step):
-    x = [];
-    y = [];
-    v = [];
-    iix = 0;
-    iiy = 0;
     xx, yy = np.meshgrid(np.arange(xmin, xmax, step), np.arange(ymax - 1, ymin - 1, -1 * step))
     ny = xx.shape[0]
     nx = xx.shape[1]
