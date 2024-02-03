@@ -1,0 +1,10 @@
+image_type file_type dpi # by default, white space is the separator
+tif stl 600
+Lx [in], Ly [in], cellsize [in], height [in], mean [in], stdev [in]
+7.0 1.7 0.025 0.0 0.0 0.025
+corr_x [in], corr_y [in]
+3.0 1.0
+ncut_x ncut_y
+1 1
+ridge, ridge_height [in], ridge_margin [in]
+0 0.1 0.0
